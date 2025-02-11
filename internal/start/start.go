@@ -298,7 +298,22 @@ EOF
 			if utils.Docker.DaemonHost() != client.DefaultDockerHost {
 				fmt.Fprintln(os.Stderr, utils.Yellow("WARNING:"), "analytics requires mounting default docker socket:", parsed.Host)
 			}
-			binds = append(binds, fmt.Sprintf("%[1]s:%[1]s:ro", parsed.Host))
+			target := parsed
+			if utils.Config.DockerSocket != "" {
+				if !strings.HasPrefix(utils.Config.DockerSocket, "unix://") {
+					utils.Config.DockerSocket = "unix://" + utils.Config.DockerSocket
+				}
+				parsed, err = client.ParseHostURL(utils.Config.DockerSocket)
+				if err != nil {
+					return errors.Errorf("failed to parse docker socket: %w", err)
+				}
+				target, err = client.ParseHostURL(client.DefaultDockerHost)
+				if err != nil {
+					return errors.Errorf("failed to parse default host: %w", err)
+				}
+			}
+			binds = append(binds, fmt.Sprintf("%s:%s:ro", parsed.Host, target.Host))
+			fmt.Printf("binds: %+v\n", binds)
 		}
 		if _, err := utils.DockerStart(
 			ctx,

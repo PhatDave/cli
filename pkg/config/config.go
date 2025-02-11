@@ -143,6 +143,7 @@ type (
 	// Common config fields between our "base" config and any "remote" branch specific
 	baseConfig struct {
 		ProjectId    string         `toml:"project_id"`
+		DockerSocket string         `toml:"docker_socket"`
 		Hostname     string         `toml:"-"`
 		Api          api            `toml:"api"`
 		Db           db             `toml:"db" mapstructure:"db"`
